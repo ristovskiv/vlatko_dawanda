@@ -108,4 +108,34 @@ describe VlatkoDawanda::Money do
     end
   end
 
+  context 'comparisons' do
+    before(:context) do
+      described_class.conversion_rates('EUR', {'USD' => 1.11, 'Bitcoin' => 0.0047})
+    end
+
+    let(:fifty_eur){described_class.new(50,'EUR')}
+    let(:twenty_usd){described_class.new(20,'USD')}
+
+    it "is equal when the other's currency is same and amount" do
+      expect(twenty_usd).to eq described_class.new(20,'USD')
+    end
+
+    it "is not equal when the other's currency is same but not amount" do
+      expect(twenty_usd).to_not eq described_class.new(30,'USD')
+    end
+
+    it "is equal when the other's currency is different but the converted amount is the same" do
+      fifty_eur_in_usd = fifty_eur.convert_to('USD')
+      expect(fifty_eur).to eq fifty_eur_in_usd
+    end
+
+    it "is greater when the other's currency is the same but amount is lower" do
+      expect(fifty_eur).to be > described_class.new(40,'EUR')
+    end
+
+    it "is lower when the other's currency is different but the converted amount is greater" do
+      expect(twenty_usd).to be < fifty_eur
+    end
+  end
+
 end

@@ -2,6 +2,7 @@ module VlatkoDawanda
   class Money
 
     include Arithmetic
+    include Comparable
 
     class << self
       def conversion_rates(base_currency, currencies)
@@ -52,6 +53,14 @@ module VlatkoDawanda
     def convert_to(iso_code)
       amount = (@amount / @currency[:rate]) * find_currency(iso_code)[:rate]
       self.class.new(amount, iso_code)
+    end
+
+    def <=>(other)
+      if currency == other.currency
+        amount.to_d.round(2) <=> other.amount.to_d.round(2)
+      else
+        amount.to_d.round(2) <=> other.convert_to(currency).amount.to_d.round(2)
+      end
     end
 
     private
