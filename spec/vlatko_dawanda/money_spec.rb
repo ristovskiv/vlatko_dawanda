@@ -14,6 +14,18 @@ describe VlatkoDawanda::Money do
       expect(currencies.keys).to_not include(:mkd)
     end
 
+    context 'raises an InvalidRate' do
+      specify 'rate is zero' do
+        invalid_hash = {'MKD' => 0}
+        expect{described_class.conversion_rates('EUR', invalid_hash)}.to raise_error VlatkoDawanda::InvalidRate
+      end
+
+      specify 'rate is negative number' do
+        invalid_hash = {'MKD' => -1}
+        expect{described_class.conversion_rates('EUR', invalid_hash)}.to raise_error VlatkoDawanda::InvalidRate
+      end
+    end
+
     it 'parses the base currency with rate 1' do
       expect(currencies[:eur][:rate]).to eq 1
     end

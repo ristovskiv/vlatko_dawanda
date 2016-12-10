@@ -17,11 +17,17 @@ module VlatkoDawanda
       # and the garbage collector is not that polluted
       def parse_currencies(base_currency, currencies)
         currencies.merge({base_currency => 1}).inject({}) do |memo, (key,value)|
-          memo[key.downcase.to_sym] = {iso_code: key, rate: value.to_d}
+          rate = validate_rate(value)
+          memo[key.downcase.to_sym] = {iso_code: key, rate: rate}
           memo
         end
       end
 
+      def validate_rate(value)
+        rate = value.to_d rescue 0.to_d
+        raise InvalidRate.new('please enter a positive float as a rate') if rate <= 0
+        rate
+      end
     end
 
     def initialize(amount, iso_code)
