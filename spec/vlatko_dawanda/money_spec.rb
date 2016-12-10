@@ -41,7 +41,7 @@ describe VlatkoDawanda::Money do
   end
 
   context 'instantation of objects' do
-    before(:example) do
+    before(:context) do
       described_class.conversion_rates('EUR', {'USD' => 1.11, 'Bitcoin' => 0.0047})
     end
 
