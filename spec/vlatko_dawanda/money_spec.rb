@@ -28,4 +28,44 @@ describe VlatkoDawanda::Money do
     end
   end
 
+  context 'instantation of objects' do
+    before(:example) do
+      described_class.conversion_rates('EUR', {'USD' => 1.11, 'Bitcoin' => 0.0047})
+    end
+
+    let(:existing_currency){described_class.new(50, 'EUR')}
+    let(:non_existing_currency){described_class.new(50, 'MKD')}
+    let(:float_currency){described_class.new(50.50, 'USD')}
+
+    it 'is valid when existing currency is in input' do
+      expect{ existing_currency }.to_not raise_error VlatkoDawanda::UnknownCurrency
+    end
+
+    it 'is raises UnknownCurrency error when non existing currency is in input' do
+      expect{ non_existing_currency }.to raise_error VlatkoDawanda::UnknownCurrency
+    end
+
+    context 'depending of the amount input' do
+
+      it 'outputs the amount in integer when 50' do
+        expect(existing_currency.amount).to eq 50
+        expect(existing_currency.amount).to be_an(Integer)
+      end
+
+      it 'outputs the amount in float when 50.50' do
+        expect(float_currency.amount).to eq 50.50
+        expect(float_currency.amount).to be_an(Float)
+      end
+
+    end
+
+    it 'outputs iso code for currency' do
+      expect(existing_currency.currency).to eq 'EUR'
+    end
+
+    it 'outputs the amount and currency iso code when inspected' do
+      expect(existing_currency.inspect).to eq "50.00 EUR"
+    end
+  end
+
 end

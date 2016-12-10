@@ -2,14 +2,19 @@ module VlatkoDawanda
   class Money
 
     class << self
-      attr_reader :currencies
-
       def conversion_rates(base_currency, currencies)
         @currencies = parse_currencies(base_currency, currencies)
       end
 
+      def currencies
+        @currencies ||= {}
+      end
+
       private
 
+      # I'm doing this instead of simple merge with the input hash
+      # cause I prefer working with symbols as keys whenever possible
+      # and the garbage collector is not that polluted
       def parse_currencies(base_currency, currencies)
         currencies.merge({base_currency => 1}).inject({}) do |memo, (key,value)|
           memo[key.downcase.to_sym] = {iso_code: key, rate: value.to_d}
@@ -17,6 +22,39 @@ module VlatkoDawanda
         end
       end
 
+    end
+
+    def initialize(amount, iso_code)
+      @amount = amount.to_d
+      @currency = validate_currency(iso_code)
+    end
+
+    def amount
+      to_f_or_i(@amount)
+    end
+
+    def currency
+      @currency[:iso_code]
+    end
+
+    def inspect
+      "#{"%.2f" % amount} #{currency}"
+    end
+
+    private
+
+    def find_currency(iso_code)
+      currency = self.class.currencies[iso_code.downcase.to_sym]
+      raise UnknownCurrency.new('currency not found') if currency.nil?
+      currency
+    end
+
+    def validate_currency(iso_code)
+      find_currency(iso_code)
+    end
+
+    def to_f_or_i(v)
+      ((float = v.to_f) && (float % 1.0 == 0) ? float.to_i : float) rescue v
     end
 
   end
