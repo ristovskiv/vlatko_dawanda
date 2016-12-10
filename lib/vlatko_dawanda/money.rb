@@ -52,6 +52,25 @@ module VlatkoDawanda
       self.class.new(amount, iso_code)
     end
 
+    ['+','-','*','/'].each do |method_name|
+      define_method(method_name) do |other|
+        result = case other
+        when ::Numeric
+          amount.to_d.send(method_name, other.to_d)
+        when self.class
+          amount.to_d.send(method_name, other.convert_to(currency).amount.to_d)
+        else
+          raise InvalidOperand.new('please enter a number or an object from the Money class')
+        end
+
+        self.class.new(result, currency)
+      end
+    end
+
+    def coerce(other)
+      return self, other
+    end
+
     private
 
     def find_currency(iso_code)
