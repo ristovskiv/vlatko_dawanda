@@ -80,4 +80,32 @@ describe VlatkoDawanda::Money do
     end
   end
 
+  context 'conversion to different currency' do
+    before(:context) do
+      @currencies = described_class.conversion_rates('EUR', {'USD' => 1.11, 'Bitcoin' => 0.0047})
+    end
+
+    let(:euro){described_class.new(50,'EUR')}
+
+    specify 'eur to usd' do
+      usd = euro.convert_to('USD')
+      expect(usd.amount).to eq(55.5)
+      expect(usd.currency).to eq('USD')
+    end
+
+    specify 'eur to usd to eur' do
+      usd = euro.convert_to('USD')
+
+      expect(usd.convert_to('EUR').amount).to eq(euro.amount)
+    end
+
+    specify 'to same currency' do
+      expect(euro.convert_to('EUR').amount).to eq(euro.amount)
+    end
+
+    it 'raises UnknownCurrency error for non existing rate' do
+      expect{ euro.convert_to('MKD') }.to raise_error VlatkoDawanda::UnknownCurrency
+    end
+  end
+
 end

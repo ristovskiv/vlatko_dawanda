@@ -32,7 +32,7 @@ module VlatkoDawanda
 
     def initialize(amount, iso_code)
       @amount = amount.to_d
-      @currency = validate_currency(iso_code)
+      @currency = find_currency(iso_code)
     end
 
     def amount
@@ -47,16 +47,17 @@ module VlatkoDawanda
       "#{"%.2f" % amount} #{currency}"
     end
 
+    def convert_to(iso_code)
+      amount = (@amount / @currency[:rate]) * find_currency(iso_code)[:rate]
+      self.class.new(amount, iso_code)
+    end
+
     private
 
     def find_currency(iso_code)
       currency = self.class.currencies[iso_code.downcase.to_sym]
       raise UnknownCurrency.new('currency not found') if currency.nil?
       currency
-    end
-
-    def validate_currency(iso_code)
-      find_currency(iso_code)
     end
 
     def to_f_or_i(v)
