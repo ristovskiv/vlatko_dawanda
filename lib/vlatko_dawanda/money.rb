@@ -1,6 +1,8 @@
 module VlatkoDawanda
   class Money
 
+    include Arithmetic
+
     class << self
       def conversion_rates(base_currency, currencies)
         @currencies = parse_currencies(base_currency, currencies)
@@ -50,25 +52,6 @@ module VlatkoDawanda
     def convert_to(iso_code)
       amount = (@amount / @currency[:rate]) * find_currency(iso_code)[:rate]
       self.class.new(amount, iso_code)
-    end
-
-    ['+','-','*','/'].each do |method_name|
-      define_method(method_name) do |other|
-        result = case other
-        when ::Numeric
-          amount.to_d.send(method_name, other.to_d)
-        when self.class
-          amount.to_d.send(method_name, other.convert_to(currency).amount.to_d)
-        else
-          raise InvalidOperand.new('please enter a number or an object from the Money class')
-        end
-
-        self.class.new(result, currency)
-      end
-    end
-
-    def coerce(other)
-      return self, other
     end
 
     private
