@@ -27,4 +27,17 @@ describe VlatkoDawanda::Currency do
       expect{invalid_currency}.to raise_error(VlatkoDawanda::InvalidRate)
     end
   end
+
+  context 'comparable' do
+    let(:equal_currency){currency.dup}
+    it 'should be equal if the rate of the other is equal' do
+      expect(currency).to eq equal_currency
+    end
+
+    it 'should not equal if the rate of the other is different' do
+      diff_currency = described_class.new({iso_code: equal_currency.iso_code, rate: equal_currency.rate + 1 })
+
+      expect(currency).to_not eq diff_currency
+    end
+  end
 end
