@@ -24,6 +24,21 @@ Money.conversion_rates('EUR', {
   'Bitcoin' => 0.0047
 })
 
+# If you wish you can configure your own Bank class where you can inherit from VlatkoDawanda::Bank and then override the parsing methods (look into the Bank class).
+
+class DeutscheBank < VlatkoDawanda::Bank
+
+  def parse_currencies(base_currency, currencies)
+    # your own implementation
+  end
+end
+
+# But be carefull the Currency initialize expects hash as an orgument
+
+# You can then make the default Bank to be your class
+
+Money.default_bank = DeutscheBank.new
+
 # Instantiate money objects (If you haven't configure a currency you can't instantiate a Money object with that currency):
 
 fifty_eur = Money.new(50, 'EUR')
