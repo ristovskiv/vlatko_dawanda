@@ -5,37 +5,20 @@ module VlatkoDawanda
     include Comparable
 
     class << self
+      attr_writer :bank
+
+      def bank
+        @bank ||= Bank.new
+      end
+
       def conversion_rates(base_currency, currencies)
-        @currencies = parse_currencies(base_currency, currencies)
-      end
-
-      def currencies
-        @currencies ||= {}
-      end
-
-      private
-
-      # I'm doing this instead of simple merge with the input hash
-      # cause I prefer working with symbols as keys whenever possible
-      # and the garbage collector is not that polluted
-      def parse_currencies(base_currency, currencies)
-        currencies.merge({base_currency => 1}).inject({}) do |memo, (key,value)|
-          rate = validate_rate(value)
-          memo[key.downcase.to_sym] = {iso_code: key, rate: rate}
-          memo
-        end
-      end
-
-      def validate_rate(value)
-        rate = value.to_d rescue 0.to_d
-        raise InvalidRate.new('please enter a positive float as a rate') if rate <= 0
-        rate
+        bank.conversion_rates(base_currency, currencies)
       end
     end
 
     def initialize(amount, iso_code)
       @amount = amount.to_d
-      @currency = find_currency(iso_code)
+      @currency = bank.find_currency(iso_code)
     end
 
     def amount
@@ -43,16 +26,21 @@ module VlatkoDawanda
     end
 
     def currency
-      @currency[:iso_code]
+      @currency.iso_code
     end
 
     def inspect
       "#{"%.2f" % amount} #{currency}"
     end
 
-    def convert_to(iso_code)
-      amount = (@amount / @currency[:rate]) * find_currency(iso_code)[:rate]
-      self.class.new(amount, iso_code)
+    def convert_to(currency)
+      to_currency = bank.find_currency(currency)
+      amount = if @currency == to_currency
+        @amount
+      else
+        (@amount / @currency.rate) * to_currency.rate
+      end
+      self.class.new(amount, to_currency.iso_code)
     end
 
     def <=>(other)
@@ -65,10 +53,8 @@ module VlatkoDawanda
 
     private
 
-    def find_currency(iso_code)
-      currency = self.class.currencies[iso_code.downcase.to_sym]
-      raise UnknownCurrency.new('currency not found') if currency.nil?
-      currency
+    def bank
+      self.class.bank
     end
 
     def to_f_or_i(v)
